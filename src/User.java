@@ -1,5 +1,4 @@
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -54,25 +53,25 @@ public class User {
         if (user != null) {
             user.setName(name);
             user.setAge(age);
-            System.out.println("Utilisateur modifié : " + user.getName());
+            System.out.println("Utilisateur modifie : " + user.getName());
         } else {
-            System.out.println("Utilisateur non trouvé");
+            System.out.println("Utilisateur non trouve");
         }
     }
 
     public static void deleteUser(String id) {
         User removedUser = users.remove(id);
         if (removedUser != null) {
-            System.out.println("Utilisateur supprimé : " + removedUser.getName());
+            System.out.println("Utilisateur supprime : " + removedUser.getName());
         } else {
-            System.out.println("Utilisateur non trouvé");
+            System.out.println("Utilisateur non trouve");
         }
     }
 
-    public void addConsumption(Consumption consumption) {
-        this.consumption.add(consumption);
-        System.out.println("Consommation ajoutée pour " + this.getName());
-    }
+        public void addConsumption(Consumption consumption) {
+            this.consumption.add(consumption);
+            System.out.println("Consommation ajoutée pour " + this.getName());
+        }
 
     public void displayTotalConsumption() {
         double total = 0.0;
@@ -83,26 +82,35 @@ public class User {
     }
 
     public double getDailyConsumption(LocalDate date) {
-        return consumption.stream()
-                .filter(cons -> !cons.getStartDate().isAfter(date) && !cons.getEndDate().isBefore(date))
-                .mapToDouble(Consumption::getValue)
-                .sum();
+        double total = 0.0;
+        for (Consumption cons : consumption) {
+            if (!cons.getStartDate().isAfter(date) && !cons.getEndDate().isBefore(date)) {
+                total += cons.getValue();
+            }
+        }
+        return total;
     }
 
     public double getWeeklyConsumption(LocalDate startOfWeek) {
+        double total = 0.0;
         LocalDate endOfWeek = startOfWeek.plusDays(6);
-        return consumption.stream()
-                .filter(cons -> !cons.getStartDate().isAfter(endOfWeek) && !cons.getEndDate().isBefore(startOfWeek))
-                .mapToDouble(Consumption::getValue)
-                .sum();
+        for (Consumption cons : consumption) {
+            if (!cons.getStartDate().isAfter(endOfWeek) && !cons.getEndDate().isBefore(startOfWeek)) {
+                total += cons.getValue();
+            }
+        }
+        return total;
     }
 
     public double getMonthlyConsumption(LocalDate month) {
+        double total = 0.0;
         LocalDate startOfMonth = month.withDayOfMonth(1);
         LocalDate endOfMonth = startOfMonth.plusMonths(1).minusDays(1);
-        return consumption.stream()
-                .filter(cons -> !cons.getStartDate().isAfter(endOfMonth) && !cons.getEndDate().isBefore(startOfMonth))
-                .mapToDouble(Consumption::getValue)
-                .sum();
+        for (Consumption cons : consumption) {
+            if (!cons.getStartDate().isAfter(endOfMonth) && !cons.getEndDate().isBefore(startOfMonth)) {
+                total += cons.getValue();
+            }
+        }
+        return total;
     }
 }

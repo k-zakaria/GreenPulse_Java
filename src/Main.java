@@ -8,13 +8,13 @@ public class Main {
 
         while (running) {
             System.out.println("\nChoisissez une option :");
-            System.out.println("1. Ajouter un utilisateur");
-            System.out.println("2. Afficher un utilisateur");
-            System.out.println("3. Mettre à jour un utilisateur");
-            System.out.println("4. Supprimer un utilisateur");
-            System.out.println("5. Ajouter une consommation");
-            System.out.println("6. Afficher la consommation totale d'un utilisateur");
-            System.out.println("7. Générer un rapport de consommation");
+            System.out.println("1. Ajouter utilisateur");
+            System.out.println("2. Afficher utilisateur");
+            System.out.println("3. Mettre a jour utilisateur");
+            System.out.println("4. Supprimer utilisateur");
+            System.out.println("5. Ajouter consommation");
+            System.out.println("6. Afficher la consommation totale d'utilisateur");
+            System.out.println("7. Generer un rapport de consommation");
             System.out.println("8. Quitter");
 
             int choice = scanner.nextInt();
@@ -26,34 +26,34 @@ public class Main {
                     String userId = scanner.nextLine();
                     System.out.print("Entrez le nom : ");
                     String userName = scanner.nextLine();
-                    System.out.print("Entrez l'âge : ");
+                    System.out.print("Entrez l'age : ");
                     int userAge = scanner.nextInt();
                     scanner.nextLine();
                     User user = new User(userId, userName, userAge);
                     User.addUser(user);
                     break;
                 case 2:
-                    System.out.print("Entrez l'id de l'utilisateur à obtenir : ");
+                    System.out.print("Entrez l'id d'utilisateur a obtenir : ");
                     String getUserById = scanner.nextLine();
                     User retrievedUser = User.getUser(getUserById);
                     if (retrievedUser != null) {
                         System.out.println("ID: " + retrievedUser.getId() + ", Nom: " + retrievedUser.getName() + ", Âge: " + retrievedUser.getAge());
                     } else {
-                        System.out.println("Utilisateur non trouvé.");
+                        System.out.println("Utilisateur non trouve.");
                     }
                     break;
                 case 3:
-                    System.out.print("Entrez l'id de l'utilisateur à mettre à jour : ");
+                    System.out.print("Entrez l'id de l'utilisateur a mettre a jour : ");
                     String updateUserById = scanner.nextLine();
                     System.out.print("Entrez le nouveau nom : ");
                     String newUserName = scanner.nextLine();
-                    System.out.print("Entrez le nouvel âge : ");
+                    System.out.print("Entrez le nouvel age : ");
                     int newUserAge = scanner.nextInt();
                     scanner.nextLine();
                     User.updateUser(updateUserById, newUserName, newUserAge);
                     break;
                 case 4:
-                    System.out.print("Entrez l'id de l'utilisateur à supprimer : ");
+                    System.out.print("Entrez l'id de l'utilisateur a supprimer : ");
                     String deleteUserId = scanner.nextLine();
                     User.deleteUser(deleteUserId);
                     break;
@@ -65,14 +65,14 @@ public class Main {
                         System.out.print("Entrez la valeur de la consommation de carbone (par exemple, en kg de CO2) : ");
                         double value = scanner.nextDouble();
                         scanner.nextLine();
-                        System.out.print("Entrez la date de début (format : AAAA-MM-JJ) : ");
+                        System.out.print("Entrez la date de debut (format : AAAA-MM-JJ) : ");
                         LocalDate startDate = LocalDate.parse(scanner.nextLine());
                         System.out.print("Entrez la date de fin (format : AAAA-MM-JJ) : ");
                         LocalDate endDate = LocalDate.parse(scanner.nextLine());
                         Consumption consumption = new Consumption(1, value, startDate, endDate);
                         consumptionUser.addConsumption(consumption);
                     } else {
-                        System.out.println("Utilisateur non trouvé.");
+                        System.out.println("Utilisateur non trouve.");
                     }
                     break;
                 case 6:
@@ -82,11 +82,11 @@ public class Main {
                     if (totalConsumptionUser != null) {
                         totalConsumptionUser.displayTotalConsumption();
                     } else {
-                        System.out.println("Utilisateur non trouvé.");
+                        System.out.println("Utilisateur non trouve.");
                     }
                     break;
                 case 7:
-                    System.out.print("Entrez l'id de l'utilisateur pour générer un rapport : ");
+                    System.out.print("Entrez l'id d'utilisateur pour generer un rapport : ");
                     String reportUserId = scanner.nextLine();
                     User reportUser = User.getUser(reportUserId);
                     if (reportUser != null) {
@@ -103,7 +103,7 @@ public class Main {
                                 System.out.println("Consommation quotidienne : " + dailyConsumption + " kg de CO2");
                                 break;
                             case 2:
-                                System.out.print("Entrez la date de début de la semaine (format : AAAA-MM-JJ) : ");
+                                System.out.print("Entrez la date de debut de la semaine (format : AAAA-MM-JJ) : ");
                                 LocalDate startOfWeek = LocalDate.parse(scanner.nextLine());
                                 double weeklyConsumption = reportUser.getWeeklyConsumption(startOfWeek);
                                 System.out.println("Consommation hebdomadaire : " + weeklyConsumption + " kg de CO2");
@@ -118,7 +118,7 @@ public class Main {
                                 System.out.println("Option invalide.");
                         }
                     } else {
-                        System.out.println("Utilisateur non trouvé.");
+                        System.out.println("Utilisateur non trouve.");
                     }
                     break;
                 case 8:
