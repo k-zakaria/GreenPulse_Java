@@ -1,6 +1,9 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class User {
     protected String id;
@@ -8,6 +11,8 @@ public class User {
     protected int age;
     private static HashMap<String, User> users = new HashMap<>();
     private ArrayList<Consumption> consumption = new ArrayList<>();
+
+
 
     public User(String id, String name, int age) {
         this.id = id;
@@ -40,8 +45,14 @@ public class User {
     }
 
     public static void addUser(User user) {
-        users.put(user.getId(), user);
-        System.out.println("Ajouter utilisateur " + user.getName());
+        String userId = user.getId();
+        if (users.containsKey(userId)) {
+            System.out.println("Erreur : L'utilisateur avec l'ID " + userId + " existe déjà.");
+        } else {
+            users.put(userId, user);
+            System.out.println("Utilisateur ajouté : " + user.getName());
+        }
+
     }
 
     public static User getUser(String id) {
@@ -68,10 +79,27 @@ public class User {
         }
     }
 
-        public void addConsumption(Consumption consumption) {
-            this.consumption.add(consumption);
-            System.out.println("Consommation ajoutée pour " + this.getName());
+    public void addConsumption(Consumption newConsumption) {
+        LocalDate newStartDate = newConsumption.getStartDate();
+        LocalDate newEndDate = newConsumption.getEndDate();
+
+        if (newStartDate.isAfter(newEndDate)) {
+            System.out.println("Erreur : la date de debut (" + newStartDate + ") est apres la date de fin (" + newEndDate + ").");
+            return;
         }
+        for (Consumption cons : consumption) {
+            LocalDate startDate = cons.getStartDate();
+            LocalDate endDate = cons.getEndDate();
+
+            if (!newEndDate.isBefore(startDate) && !newStartDate.isAfter(endDate)) {
+                System.out.println("Erreur : La periode de consommation proposée existe.");
+                return;
+            }
+        }
+
+        this.consumption.add(newConsumption);
+        System.out.println("Consommation ajoutée pour " + this.getName());
+    }
 
     public void displayTotalConsumption() {
         double total = 0.0;
@@ -82,24 +110,29 @@ public class User {
     }
 
     public double getDailyConsumption(LocalDate date) {
-        double total = 0.0;
+        double totalConsumption = 0.0;
+
         for (Consumption cons : consumption) {
-            if (!cons.getStartDate().isAfter(date) && !cons.getEndDate().isBefore(date)) {
-                total += cons.getValue();
+            LocalDate startDate = cons.getStartDate();
+            LocalDate endDate = cons.getEndDate();
+            double value = cons.getValue();
+
+            if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
+                long daysBetween = startDate.until(endDate).getDays() + 1;
+                double dailyConsumption = value / daysBetween;
+                totalConsumption += dailyConsumption;
             }
         }
-        return total;
+        return totalConsumption;
     }
 
     public double getWeeklyConsumption(LocalDate startOfWeek) {
         double total = 0.0;
         LocalDate endOfWeek = startOfWeek.plusDays(6);
-        for (Consumption cons : consumption) {
-            if (!cons.getStartDate().isAfter(endOfWeek) && !cons.getEndDate().isBefore(startOfWeek)) {
-                total += cons.getValue();
-            }
-        }
-        return total;
+        return consumption.stream()
+                .filter(cons -> !cons.getStartDate().isAfter(endOfWeek) && !cons.getEndDate().isBefore(startOfWeek))
+                .mapToDouble(Consumption::getValue)
+                .sum();
     }
 
     public double getMonthlyConsumption(LocalDate month) {
