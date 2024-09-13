@@ -15,22 +15,17 @@ public class Main {
         Connection connection = null;
 
         try {
-            // Établir une connexion à la base de données
             connection = DatabaseConnection.getInstance().getConnection();
 
-            // Initialiser les repositories et services
             UserRepository userRepository = new UserRepository(connection);
             ConsumptionRepository consumptionRepository = new ConsumptionRepository(connection);
-            UserService userService = new UserService(userRepository);
             ConsumptionService consumptionService = new ConsumptionService(consumptionRepository);
+            UserService userService = new UserService(userRepository, consumptionService); // Correction ici
 
-            // Initialiser les opérations utilisateur pour gérer les entrées utilisateur
             UserOperations userOperations = new UserOperations(scanner, userService, consumptionService);
             boolean running = true;
 
-            // Boucle principale pour l'interaction utilisateur
             while (running) {
-                // Afficher les options du menu
                 System.out.println("\nChoisissez une option :");
                 System.out.println("1. Ajouter utilisateur");
                 System.out.println("2. Afficher utilisateur");
@@ -40,15 +35,16 @@ public class Main {
                 System.out.println("6. Afficher la consommation totale d'utilisateur");
                 System.out.println("7. Calculer l'impact environnemental de l'utilisateur");
                 System.out.println("8. Générer un rapport de consommation");
-                System.out.println("9. Quitter");
+                System.out.println("9. Filtrer les utilisateurs par consommation");
+                System.out.println("10. Calculer la consommation moyenne d'utilisateur pour une période");
+                System.out.println("11. Détection des utilisateurs inactifs");
+                System.out.println("12. Trier les utilisateurs par consommation totale");
+                System.out.println("13. Quitter");
 
-
-                // Obtenir le choix de l'utilisateur
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
-                // Effectuer l'opération en fonction du choix
-                if (choice == 9) {
+                if (choice == 13) {
                     System.out.println("Au revoir !");
                     running = false;
                 } else {
@@ -56,7 +52,6 @@ public class Main {
                 }
             }
         } finally {
-            // Assurer la fermeture correcte de la connexion
             if (connection != null) {
                 try {
                     connection.close();

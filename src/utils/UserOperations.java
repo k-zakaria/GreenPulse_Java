@@ -3,6 +3,8 @@ package utils;
 import entities.*;
 import services.UserService;
 import services.ConsumptionService;
+
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
@@ -42,6 +44,21 @@ public class UserOperations {
                 displayImpact();
                 break;
             case 8:
+                generateConsumptionReport();
+                break;
+            case 9:
+                displayUsersAboveThreshold();
+                break;
+            case 10:
+                displayAverageConsumption();
+                break;
+            case 11:
+                displayInactiveUsers();
+                break;
+            case 12:
+                displayUsersSortedByConsumption();
+                break;
+            case 13:
                 System.out.println("Au revoir !");
                 System.exit(0);
                 break;
@@ -197,7 +214,6 @@ public class UserOperations {
         User user = userService.getById(userId);
 
         if (user != null) {
-            // Utiliser le service de consommation pour calculer le total
             double totalConsumption = consumptionService.getTotalConsumptionForUser(user);
             System.out.println("Consommation totale pour l'utilisateur " + user.getName() + " : " + totalConsumption + " unités");
         } else {
@@ -217,4 +233,136 @@ public class UserOperations {
             System.out.println("Utilisateur non trouvé.");
         }
     }
+
+    private void displayUsersAboveThreshold() {
+        System.out.print("Entrez le seuil de consommation (en kg CO2eq) : ");
+        double threshold = scanner.nextDouble();
+        scanner.nextLine();
+
+        List<User> usersAboveThreshold = userService.getUsersAboveConsumptionThreshold(threshold);
+
+        if (usersAboveThreshold.isEmpty()) {
+            System.out.println("Aucun utilisateur ne dépasse le seuil de consommation spécifié.");
+        } else {
+            System.out.println("Utilisateurs avec une consommation supérieure à " + threshold + " kg CO2eq :");
+            for (User user : usersAboveThreshold) {
+                System.out.println("ID: " + user.getId() + ", Nom: " + user.getName() + ", Âge: " + user.getAge());
+            }
+        }
+    }
+
+    private void displayAverageConsumption() {
+        System.out.print("Entrez l'id de l'utilisateur pour calculer la consommation moyenne : ");
+        String userId = scanner.nextLine();
+        User user = userService.getById(userId);
+
+        if (user != null) {
+            System.out.print("Entrez la date de début (format : AAAA-MM-JJ) : ");
+            LocalDate startDate = LocalDate.parse(scanner.nextLine());
+
+            System.out.print("Entrez la date de fin (format : AAAA-MM-JJ) : ");
+            LocalDate endDate = LocalDate.parse(scanner.nextLine());
+
+            double averageConsumption = consumptionService.getAverageConsumptionForUser(user, startDate, endDate);
+            System.out.println("Consommation moyenne de carbone pour l'utilisateur " + user.getName() + " entre " + startDate + " et " + endDate + " : " + averageConsumption + " unités");
+        } else {
+            System.out.println("Utilisateur non trouvé.");
+        }
+    }
+
+    private void displayInactiveUsers() {
+        System.out.print("Entrez la date de début (format : AAAA-MM-JJ) : ");
+        LocalDate startDate = LocalDate.parse(scanner.nextLine());
+
+        System.out.print("Entrez la date de fin (format : AAAA-MM-JJ) : ");
+        LocalDate endDate = LocalDate.parse(scanner.nextLine());
+
+        List<User> inactiveUsers = userService.getInactiveUsers(startDate, endDate);
+
+        if (inactiveUsers.isEmpty()) {
+            System.out.println("Aucun utilisateur inactif pendant la période spécifiée.");
+        } else {
+            System.out.println("Utilisateurs inactifs entre " + startDate + " et " + endDate + " :");
+            for (User user : inactiveUsers) {
+                System.out.println("ID: " + user.getId() + ", Nom: " + user.getName() + ", Âge: " + user.getAge());
+            }
+        }
+    }
+
+    private void displayUsersSortedByConsumption() {
+        List<User> sortedUsers = userService.getUsersSortedByTotalConsumption();
+
+        if (sortedUsers.isEmpty()) {
+            System.out.println("Aucun utilisateur trouvé.");
+        } else {
+            System.out.println("Utilisateurs triés par consommation totale de carbone :");
+            for (User user : sortedUsers) {
+                double totalConsumption = consumptionService.getTotalConsumptionForUser(user);
+                System.out.println("ID: " + user.getId() + ", Nom: " + user.getName() + ", Âge: " + user.getAge() + ", Consommation Totale: " + totalConsumption + " unités");
+            }
+        }
+    }
+
+    private void generateConsumptionReport() {
+        try {
+            System.out.println("Choisissez le type de rapport :");
+            System.out.println("1. Quotidien");
+            System.out.println("2. Hebdomadaire");
+            System.out.println("3. Mensuel");
+            System.out.print("Entrez le numéro de votre choix : ");
+            int reportType = scanner.nextInt();
+            scanner.nextLine(); // Consomme la nouvelle ligne restante
+
+            switch (reportType) {
+                case 1:
+                    System.out.print("Entrez la date (format : AAAA-MM-JJ) : ");
+                    LocalDate date = LocalDate.parse(scanner.nextLine());
+                    List<Consumption> dailyReport = consumptionService.generateDailyReport(date);
+                    double dailyTotal = consumptionService.calculateTotalConsumption(dailyReport);
+                    System.out.println("Rapport quotidien pour le " + date + ":");
+                    System.out.println("Consommation totale : " + dailyTotal + " unités");
+                    break;
+
+                case 2:
+                    System.out.print("Entrez la date de début (format : AAAA-MM-JJ) : ");
+                    LocalDate startDate = LocalDate.parse(scanner.nextLine());
+
+                    System.out.print("Entrez la date de fin (format : AAAA-MM-JJ) : ");
+                    LocalDate endDate = LocalDate.parse(scanner.nextLine());
+
+                    List<Consumption> weeklyReport = consumptionService.generateWeeklyReport(startDate, endDate);
+                    double weeklyTotal = consumptionService.calculateTotalConsumption(weeklyReport);
+                    System.out.println("Rapport hebdomadaire du " + startDate + " au " + endDate + ":");
+                    System.out.println("Consommation totale : " + weeklyTotal + " unités");
+                    break;
+
+                case 3:
+                    System.out.print("Entrez l'année (AAAA) : ");
+                    int year = scanner.nextInt();
+                    scanner.nextLine(); // Consomme la nouvelle ligne restante
+
+                    System.out.print("Entrez le mois (1-12) : ");
+                    int month = scanner.nextInt();
+                    scanner.nextLine(); // Consomme la nouvelle ligne restante
+
+                    List<Consumption> monthlyReport = consumptionService.generateMonthlyReport(year, month);
+                    double monthlyTotal = consumptionService.calculateTotalConsumption(monthlyReport);
+                    System.out.println("Rapport mensuel pour " + year + "-" + month + ":");
+                    System.out.println("Consommation totale : " + monthlyTotal + " unités");
+                    break;
+
+                default:
+                    System.out.println("Choix invalide. Veuillez entrer un numéro entre 1 et 3.");
+                    break;
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la génération du rapport : " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Erreur : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
 }

@@ -2,10 +2,7 @@ package repositories;
 
 import entities.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +101,6 @@ public class ConsumptionRepository {
                         consumption = getFoodConsumption(id, value, startDate, endDate);
                         break;
                     default:
-                        // Handle unexpected type
                         System.err.println("Unknown consumption type: " + type);
                         break;
                 }
@@ -114,7 +110,7 @@ public class ConsumptionRepository {
                 }
             }
         } catch (SQLException | IllegalArgumentException e) {
-            e.printStackTrace();  // Consider using a logging framework
+            e.printStackTrace();
         }
 
         return consumptions;
@@ -122,7 +118,6 @@ public class ConsumptionRepository {
 
 
     private TransportConsumption getTransportConsumption(long id, double value, LocalDate startDate, LocalDate endDate) throws SQLException {
-        // Exemple d'implémentation
         String query = "SELECT distance_travelled, vehicle_type FROM transport WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setLong(1, id);
@@ -168,4 +163,50 @@ public class ConsumptionRepository {
         }
         return null;
     }
+
+    public List<Consumption> getDailyConsumption(LocalDate date) throws SQLException {
+        String query = "SELECT * FROM consumption WHERE DATE(start_date) = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setDate(1, Date.valueOf(date));
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return extractConsumptions(resultSet);
+        }
+    }
+
+    public List<Consumption> getWeeklyConsumption(LocalDate startDate, LocalDate endDate) throws SQLException {
+        String query = "SELECT * FROM consumption WHERE start_date BETWEEN ? AND ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setDate(1, Date.valueOf(startDate));
+            preparedStatement.setDate(2, Date.valueOf(endDate));
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return extractConsumptions(resultSet);
+        }
+    }
+
+    public List<Consumption> getMonthlyConsumption(int year, int month) throws SQLException {
+        String query = "SELECT * FROM consumption WHERE EXTRACT(YEAR FROM start_date) = ? AND EXTRACT(MONTH FROM start_date) = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, year);
+            preparedStatement.setInt(2, month);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return extractConsumptions(resultSet);
+        }
+    }
+
+    private List<Consumption> extractConsumptions(ResultSet resultSet) throws SQLException {
+        List<Consumption> consumptions = new ArrayList<>();
+        while (resultSet.next()) {
+            long id = resultSet.getLong("id");
+            double value = resultSet.getDouble("value");
+            LocalDate startDate = resultSet.getDate("start_date").toLocalDate();
+            LocalDate endDate = resultSet.getDate("end_date").toLocalDate();
+            String type = resultSet.getString("type");
+            Consumption consumption = new Consumption(id, value, startDate, endDate, ConsumptionType.valueOf(type.toUpperCase()));
+            consumptions.add(consumption);
+        }
+        return consumptions;
+    }
+
+
+
 }
